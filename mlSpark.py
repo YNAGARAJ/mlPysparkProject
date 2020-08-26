@@ -2,7 +2,7 @@ import pandas as pd
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as func
 from pyspark.sql.window import Window
-from statsmodels.tsa.stattools import adfuller, acf, pacf
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.arima_model import ARIMA
 
 spark = SparkSession \
@@ -33,12 +33,12 @@ df4 = df3.withColumn("Npower", df3["power"].cast("double")).withColumn("Ntime", 
 df5 = df4.groupBy('turbine', Window("Ntime", "10m")).agg(sum("Npower").alias('Sum Power')).select("Ntime", "Sum Power")
 
 #Tranform the Power
-df6 = df5.withColumn("logPower", func.log("Sum Power"))
+#df6 = df5.withColumn("logPower", func.log("Sum Power"))
 
-header = df6.first()
+header = df5.first()
 
 #Remove Header
-data = df6.filter(lambda row: row != header)
+data = df5.filter(lambda row: row != header)
 
 #def test_stationarity(timeseries):
 #    # Perform Dickey-Fuller test:
@@ -50,18 +50,19 @@ data = df6.filter(lambda row: row != header)
 #    # print(dftest)
 #    print(dfoutput)
 
+#plot_acf(data)
+
+#plot_pacf(data)
+
+#Split data into train and test
+(traindata, testdata) = data.randomSplit([0.7, 0.3])
 
 #fit model
 
-model = ARIMA(data, order=[6, 0, 0])
-res_ARIMA = model.fit(maxiter=300)
-print(res_ARIMA.summary())
+model = ARIMA(data, order=[1, 0, 0])
+model_ARIMA = model.fit()
+print(model_ARIMA.summary())
 
-(traindata, testdata) = data.randomSplit([0.7, 0.3])
+power_forecast = model_ARIMA.forecast(steps=6)[0]
 
-for i in range(len(testdata)):
-
-    model = ARIMA(traindata, order=[6,0,0])
-    modelfit = model.fit(disp=0)
-    output = modelfit.forecast()
-    print(output)
+print(power_forecast)
