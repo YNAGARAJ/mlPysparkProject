@@ -40,10 +40,10 @@ header = df5.first()
 #Remove Header
 data = df5.filter(lambda row: row != header)
 
-#def test_stationarity(timeseries):
+#def test_stationarity(data):
 #    # Perform Dickey-Fuller test:
 #    print('Results of Dickey-Fuller Test:')
-#    dftest = adfuller(timeseries.iloc[:, 0].values, autolag='AIC')
+#    dftest = adfuller(data.iloc[:, 0].values, autolag='AIC')
 #    dfoutput = pd.Series(dftest[0:4], index=['Test Statistic', 'p-value', '#Lags Used', 'Number of Observations Used'])
 #    for key, value in dftest[4].items():
 #        dfoutput['Critical Value (%s)' % key] = value
